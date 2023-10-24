@@ -1,12 +1,89 @@
 #include "stdio.h"
 #include "stdlib.h"
-#include "gaussSolver.c" 
 #include "math.h"
 
+int gaussSolver(int n, float A[n][n], float b[n], float X[n]) {
+    int i, j, k, l, m;
+    
+    
+    
+    
+    
+    //ETAPA DE ESCALONAMENTO
+    
+    for (k = 0; k < n - 1; k++) {
+        float max = fabs(A[k][k]);
+        int maxIndex = k;
+        //procura o maior k-esimo coeficiente em modulo
+        for (i = k + 1; i < n; i++) {
+            if (max < fabs(A[i][k])) {
+                max = fabs(A[i][k]);
+                maxIndex = i;
+            }
+        }
+        if (maxIndex != k) {
+            /*
+             troca a equacao k pela equacao com o
+             maior k-esimo coeficiente em modulo
+             */
+            for (j = 0; j < n; j++) {
+                float temp = A[k][j];
+                A[k][j] = A[maxIndex][j];
+                A[maxIndex][j] = temp;
+            }
+            float temp = b[k];
+            b[k] = b[maxIndex];
+            b[maxIndex] = temp;
+        }
+        //Se A[k][k] for zero, entao a matriz dos coeficiente nao tem resolucao
+        //det A = 0
+        if (A[k][k] == 0) {
+            //A matriz dos coeficientes nao tem resolucao
+            return 0 ;
+        } else {
+            //realiza o escalonamento
+            	
+            for (m = k + 1; m < n; m++) { 
+                float F = -A[m][k] / A[k][k];
+                A[m][k] = 0; //evita uma iteracao
+                b[m] = b[m] + F * b[k];
+                for (l = k + 1; l < n; l++) {
+                    A[m][l] = A[m][l] + F * A[k][l];
+                }
+                
+                
+	
+                
+            }
+        }
+    }
+    
+ 	
+
+
+    //ETAPA DE RESOLUCAO DO SISTEMA   
+   
+    for (i = n - 1; i >= 0; i--) {
+    	X[i] = b[i]; // salvando valores de Y (b[i]) em X[i]    	
+        //substituicoes retroativas � partir da segunda equacao
+        for (j = i + 1; j < n; j++) {
+            X[i] = X[i] - X[j] * A[i][j];            
+        }
+        X[i] = X[i] / A[i][i];
+       
+    }
+     
+    
+    
+   }
+   
 int interpolation(int n , float  pontos[n][2],  float  X[n],  float Y[n], int m){
 int i, j; 
 float A[m][m]; 
-int grupo = n/m;
+int grupo = n/m; // grupo � a quantidade de pontos que vai ser agrupada para gerar o polinomio interpolador 
+
+
+// for para definir os novos valores dos "m" pontos
 for(i = 0; i<m; i++){
 	float valorX = 0;
 	float valorY = 0;
@@ -19,59 +96,78 @@ for(i = 0; i<m; i++){
 }
 n = m;
 
-//Geração da matriz quadrada A. 
+//Geracao da matriz quadrada A. 
 for (i = 0; i < n ; i++) {
 	for (j = 0; j < n ; j ++) {
-A[i][j] = pow(pontos[i][0], n- j - 1); 
-printf("%.0f  ", A[i][j]);                                //= print da matriz quadrada
+A[i][j] = pow(pontos[i][0], n- j - 1);                                
 		}
-		printf("\n"); 
+	 
 	}
-printf("\n Y = {"); 
+ 
 for (i = 0; i < n ; i++){
 Y[i] = pontos[i][1]; 
-
-printf(" %.0f  ", Y[i]);
+X[i] = pontos[i][0];
 }
-printf("}\n"); 
+
+
+
+
 
 gaussSolver( n, A, Y, X); 
-
-for(i = 0; i<n;i++){
-	printf("X%d = %Lf\n",i,X[i]);
-	 //printf("x1 = %f\nx2 = %f\nx3 = %f \nX4 = %f\n", X[0], X[1], X[2], X[3]);//solução do sistema
-	 
-}
-printf("\n");
-for(i = 0; i<n;i++){
-	
-	 printf("%.4llfx^%d +",X[i],n-i);
-//	printf("\n%.4fx^%d +  %.4fx^%d + %.4fx + %.4f \n", X[0],n-1,  X[1],n-2,  X[2], X[3]); //gera o polinômio interpolador
-	
-}
-printf("\n");
  
 	return 0; 	
 }
 
 
-//teste
+
 int main( ){
-int n = 1000;
-float pontos[n][2]; 
-int i= 0;
-int j=0;
-for (i= 0; i<n; i++){
-	for(j=0; j<2; j++){
-		pontos[i][j] = i;
-	}
+int n,m,i,j;
+
+
+FILE *file;
+file = fopen("entrada.txt", "r");
+
+
+if(file == NULL){
+	return 0;
 }
 
-//float pontos[4][2] = {{0, 0}, {0.52359877559, 0.5}, { 0.78539816339, 0.70710678118}, {1.57079632679, 1} }; 
+fscanf(file, "%d %d", &n, &m); // n- quantidade total de pontos / m - grau + 1 do polinomio interpolador (grau 3 => m = 4)
+float pontos[n][2]; // matriz dos pontos [x][y]
 
-float X[n]; 
+
+
+
+
+for(i = 0; i<n; i++){	
+	fscanf(file,"%f",&pontos[i][0]); // salva os x	
+}
+for(i = 0; i<n; i++){
+	fscanf(file,"%f",&pontos[i][1]); // salva os y
+}
+
+
+
+
+
+float X[n]; // vetores de X e Ys 
 float Y[n]; 
-interpolation(n, pontos,  X, Y, 8); 
+
+
+
+interpolation(n, pontos,  X, Y, m);  // funcao de interpolacao
+FILE *file1; // arquivo de saida
+file1 = fopen("saida.txt", "w");
+
+fprintf(file1,"Polinomio interpolador:\n");
+for(i = 0; i<m;i++){
+	 if(i == m-1){
+	 	fprintf(file1,"%.4f ",X[i]);
+	 }else{
+	 fprintf(file1,"%.4fx^%d + ",X[i],m-i-1);
+	 }
+	
+}
 
 
 	return 0; 
