@@ -1,17 +1,15 @@
-//GitHub: HenriqueIni
-//www.blogcyberini.com
-
 #include "stdio.h"
 #include "stdlib.h"
 #include "math.h"
 
 
 
-int gaussSolver(int n, double A[n][n], double b[n], double X[n]) {
+int gaussSolver(int n, float A[n][n], float b[n], float X[n]) {
     int i, j, k, l, m;
     //ETAPA DE ESCALONAMENTO
+    
     for (k = 0; k < n - 1; k++) {
-        double max = fabs(A[k][k]);
+        float max = fabs(A[k][k]);
         int maxIndex = k;
         //procura o maior k-ésimo coeficiente em módulo
         for (i = k + 1; i < n; i++) {
@@ -26,11 +24,11 @@ int gaussSolver(int n, double A[n][n], double b[n], double X[n]) {
              maior k-ésimo coeficiente em módulo
              */
             for (j = 0; j < n; j++) {
-                double temp = A[k][j];
+                float temp = A[k][j];
                 A[k][j] = A[maxIndex][j];
                 A[maxIndex][j] = temp;
             }
-            double temp = b[k];
+            float temp = b[k];
             b[k] = b[maxIndex];
             b[maxIndex] = temp;
         }
@@ -42,7 +40,7 @@ int gaussSolver(int n, double A[n][n], double b[n], double X[n]) {
         } else {
             //realiza o escalonamento
             for (m = k + 1; m < n; m++) {
-                double F = -A[m][k] / A[k][k];
+                float F = -A[m][k] / A[k][k];
                 A[m][k] = 0; //evita uma iteração
                 b[m] = b[m] + F * b[k];
                 for (l = k + 1; l < n; l++) {
